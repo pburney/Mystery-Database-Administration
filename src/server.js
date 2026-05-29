@@ -2,8 +2,9 @@ import express from 'express';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import config from './config.js';
-import { initConfigDb } from './db/config-db.js';
+import { initConfigDb, getConfigDb } from './db/config-db.js';
 import apiRouter from './routes/index.js';
+import { loadPlugins } from './plugins/loader.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -27,6 +28,7 @@ async function start() {
   });
 
   app.use('/api', apiRouter);
+  await loadPlugins(app, getConfigDb());
   app.use(express.static(resolve(__dirname, '..', 'public')));
 
   // SPA fallback — serve index.html for any non-API GET

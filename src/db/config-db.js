@@ -5,8 +5,13 @@ import { seed } from './seed.js';
 import config from '../config.js';
 
 let _db = null;
+let _testDb = null;
+
+export function setTestDb(db) { _testDb = db; }
+export function clearTestDb() { _testDb = null; }
 
 export function getConfigDb() {
+  if (_testDb) return _testDb;
   if (_db) return _db;
   const path = resolve(config.configDbPath);
   _db = new Database(path);
