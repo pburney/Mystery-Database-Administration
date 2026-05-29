@@ -1,0 +1,28 @@
+{
+  "name": "mystery",
+  "version": "6.0.0",
+  "description": "General-purpose database admin interface with group-based permissions",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "keywords": ["admin", "database", "mysql", "sqlite", "crud"],
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.10.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.7",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
+  }
+}
