@@ -3,7 +3,7 @@ import { getTable } from './table-service.js';
 import { runHooks } from '../hooks/hook-runner.js';
 
 function makeCtx(overrides) {
-  return { requestData: {}, pkValue: null, adapter: null, messages: [], ...overrides };
+  return { requestData: {}, pkValue: null, adapter: null, messages: [], tableId: null, tableName: '', userId: null, username: null, ipAddress: null, ...overrides };
 }
 
 export async function listRecords(configDb, tableId, { page = 1, rows = 25, orderBy = '', dir = 'asc', q = '' } = {}) {
@@ -47,12 +47,12 @@ export async function getRecord(configDb, tableId, pkValue) {
   return rows[0] ?? null;
 }
 
-export async function insertRecord(configDb, tableId, data) {
+export async function insertRecord(configDb, tableId, data, meta = {}) {
   const table = getTable(configDb, tableId);
   if (!table) throw Object.assign(new Error('Table not found'), { status: 404 });
 
   const adapter = getTargetAdapter(configDb, table.table_connection_id);
-  const ctx = makeCtx({ requestData: { ...data }, adapter });
+  const ctx = makeCtx({ requestData: { ...data }, adapter, tableId, tableName: table.table_real_name, ...meta });
 
   await runHooks(configDb, tableId, 'before:insert', ctx);
 
@@ -64,12 +64,12 @@ export async function insertRecord(configDb, tableId, data) {
   return { pk: newPk, messages: ctx.messages };
 }
 
-export async function updateRecord(configDb, tableId, pkValue, data) {
+export async function updateRecord(configDb, tableId, pkValue, data, meta = {}) {
   const table = getTable(configDb, tableId);
   if (!table) throw Object.assign(new Error('Table not found'), { status: 404 });
 
   const adapter = getTargetAdapter(configDb, table.table_connection_id);
-  const ctx = makeCtx({ requestData: { ...data }, pkValue, adapter });
+  const ctx = makeCtx({ requestData: { ...data }, pkValue, adapter, tableId, tableName: table.table_real_name, ...meta });
 
   await runHooks(configDb, tableId, 'before:update', ctx);
 
@@ -85,12 +85,12 @@ export async function updateRecord(configDb, tableId, pkValue, data) {
   return { affected, messages: ctx.messages };
 }
 
-export async function deleteRecord(configDb, tableId, pkValue) {
+export async function deleteRecord(configDb, tableId, pkValue, meta = {}) {
   const table = getTable(configDb, tableId);
   if (!table) throw Object.assign(new Error('Table not found'), { status: 404 });
 
   const adapter = getTargetAdapter(configDb, table.table_connection_id);
-  const ctx = makeCtx({ pkValue, adapter });
+  const ctx = makeCtx({ pkValue, adapter, tableId, tableName: table.table_real_name, ...meta });
 
   await runHooks(configDb, tableId, 'before:delete', ctx);
 

@@ -5,13 +5,8 @@ export function flash(root, message, type = 'error') {
     el.id = 'flash';
     root.prepend(el);
   }
-  const colors = {
-    error:   'bg-red-100 text-red-700 border border-red-300',
-    warning: 'bg-yellow-100 text-yellow-700 border border-yellow-300',
-    info:    'bg-blue-100 text-blue-700 border border-blue-300',
-    success: 'bg-green-100 text-green-700 border border-green-300',
-  };
-  el.className = `mb-4 px-3 py-2 rounded text-sm ${colors[type] ?? colors.info}`;
+  const typeClass = { error: 'flash-error', warning: 'flash-warning', info: 'flash-info', success: 'flash-success' };
+  el.className = `flash ${typeClass[type] ?? 'flash-info'}`;
   el.textContent = message;
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }

@@ -63,5 +63,6 @@ function publicUser(row, groups) {
     lastName: row.user_last_name,
     groups,
     isAdmin: groups.includes(1),
+    passwordIsDefault: row.password_is_default === 1,
   };
 }

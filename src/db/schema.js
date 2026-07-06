@@ -1,16 +1,17 @@
 export function applySchema(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
-      user_id        INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_username  TEXT    NOT NULL UNIQUE,
-      user_email     TEXT    NOT NULL UNIQUE,
-      user_password  TEXT    NOT NULL,
-      user_first_name TEXT   NOT NULL DEFAULT '',
-      user_last_name  TEXT   NOT NULL DEFAULT '',
-      user_valid_ip   TEXT   NOT NULL DEFAULT '*',
-      is_active       INTEGER NOT NULL DEFAULT 1,
-      created_at      TEXT   NOT NULL DEFAULT (datetime('now')),
-      updated_at      TEXT   NOT NULL DEFAULT (datetime('now'))
+      user_id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_username       TEXT    NOT NULL UNIQUE,
+      user_email          TEXT    NOT NULL UNIQUE,
+      user_password       TEXT    NOT NULL,
+      user_first_name     TEXT    NOT NULL DEFAULT '',
+      user_last_name      TEXT    NOT NULL DEFAULT '',
+      user_valid_ip       TEXT    NOT NULL DEFAULT '*',
+      is_active           INTEGER NOT NULL DEFAULT 1,
+      password_is_default INTEGER NOT NULL DEFAULT 1,
+      created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
+      updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
     );
 
     CREATE TABLE IF NOT EXISTS groups (
@@ -125,6 +126,24 @@ export function applySchema(db) {
       plugin_route      TEXT    NOT NULL,
       group_restriction INTEGER NOT NULL DEFAULT 0,
       is_active         INTEGER NOT NULL DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS mystery_settings (
+      setting_key   TEXT PRIMARY KEY,
+      setting_value TEXT NOT NULL DEFAULT ''
+    );
+
+    CREATE TABLE IF NOT EXISTS audit_log (
+      log_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER,
+      username     TEXT,
+      table_id     INTEGER,
+      table_name   TEXT,
+      record_pk    TEXT,
+      action       TEXT    NOT NULL,
+      changed_data TEXT    NOT NULL DEFAULT '{}',
+      ip_address   TEXT,
+      created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
     );
   `);
 }

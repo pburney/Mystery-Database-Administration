@@ -1,6 +1,8 @@
 node_modules/
 .env
+.env.demo
 *.db
 *.db-shm
 *.db-wal
+examples/chinook-demo.sqlite
 coverage/

@@ -23,14 +23,14 @@ export async function getFKOptions(configDb, tableId, localField) {
   const foreignTable = getTable(configDb, fk.foreign_table_id);
   const adapter = getTargetAdapter(configDb, foreignTable?.table_connection_id ?? null);
 
-  const labelExpr = fk.foreign_table_label_field.includes(',')
-    ? `CONCAT_WS(' ', ${fk.foreign_table_label_field.split(',').map(f => `\`${f.trim()}\``).join(', ')})`
-    : `\`${fk.foreign_table_label_field}\``;
+  const labelFields = fk.foreign_table_label_field.split(',').map(f => f.trim());
+  const allFields = [...new Set([fk.foreign_table_value_field, ...labelFields])];
 
-  const sql = `SELECT \`${fk.foreign_table_value_field}\` AS value, ${labelExpr} AS label
-               FROM \`${fk.foreign_real_name}\`
-               ORDER BY label`;
-
+  const sql = `SELECT ${allFields.map(f => `"${f}"`).join(', ')} FROM "${fk.foreign_real_name}" ORDER BY "${labelFields[0]}"`;
   const rows = await adapter.select(sql);
-  return rows;
+
+  return rows.map(row => ({
+    value: row[fk.foreign_table_value_field],
+    label: labelFields.map(f => row[f]).filter(v => v != null).join(' '),
+  }));
 }

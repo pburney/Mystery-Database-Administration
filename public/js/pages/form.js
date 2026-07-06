@@ -4,27 +4,28 @@ import { flash } from '../components/flash.js';
 import { renderField, collectFormData } from '../components/field-renderer.js';
 
 export async function render(root, [mode, tableId, pkValue] = []) {
-  // mode is 'add' or 'edit' — injected by app.js routing
   const isEdit = mode === 'edit';
   await getUser();
   renderNav(root);
 
   root.innerHTML = `
-    <div class="max-w-2xl mx-auto p-4">
+    <div class="page-wrap-sm">
       <div id="flash-area"></div>
-      <div class="flex items-center justify-between mb-4">
-        <h2 id="form-title" class="text-xl font-semibold">${isEdit ? 'Edit' : 'Add'} Record</h2>
-        <a href="#/list/${tableId}" class="text-sm text-gray-500 hover:underline">← Back to list</a>
+      <div class="page-header">
+        <h2 id="form-title" class="page-title">${isEdit ? 'Edit' : 'Add'} Record</h2>
+        <a href="#/list/${tableId}" class="back-link">← Back to list</a>
       </div>
-      <form id="record-form" class="bg-white rounded shadow p-6 space-y-4">
-        <div id="fields-area"></div>
-        <div class="flex gap-2 pt-2">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded">
-            ${isEdit ? 'Save changes' : 'Create'}
-          </button>
-          <a href="#/list/${tableId}" class="text-sm px-4 py-2 border rounded hover:bg-gray-50">Cancel</a>
-        </div>
-      </form>
+      <div class="page-card">
+        <form id="record-form">
+          <div id="fields-area"></div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+              ${isEdit ? 'Save changes' : 'Create'}
+            </button>
+            <a href="#/list/${tableId}" class="btn btn-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
     </div>
   `;
 
@@ -34,9 +35,19 @@ export async function render(root, [mode, tableId, pkValue] = []) {
     return;
   }
 
-  const { table, fields } = schemaRes.data;
-  renderNav(root, { title: table.table_display_name });
+  const { table, fields, foreignKeys = [] } = schemaRes.data;
+  renderNav(root, { title: table.table_display_name, crumbHref: `#/list/${tableId}` });
   root.querySelector('#form-title').textContent = `${isEdit ? 'Edit' : 'Add'} ${table.table_display_data_word}`;
+
+  // Build FK field → options map, fetching all in parallel
+  const fkByField = Object.fromEntries(foreignKeys.map(fk => [fk.local_table_field, fk]));
+  const fkOptionsMap = {};
+  await Promise.all(
+    foreignKeys.map(async fk => {
+      const res = await api.get(`/records/${tableId}/fk-options/${fk.local_table_field}`);
+      if (res.status === 'ok') fkOptionsMap[fk.local_table_field] = res.data;
+    })
+  );
 
   let existingRecord = {};
   if (isEdit && pkValue) {
@@ -50,7 +61,8 @@ export async function render(root, [mode, tableId, pkValue] = []) {
 
   const fieldsArea = root.querySelector('#fields-area');
   for (const field of fields) {
-    fieldsArea.appendChild(renderField(field, existingRecord[field.name] ?? null));
+    const fkOptions = fkOptionsMap[field.name] ?? null;
+    fieldsArea.appendChild(renderField(field, existingRecord[field.name] ?? null, { fkOptions }));
   }
 
   root.querySelector('#record-form').addEventListener('submit', async e => {

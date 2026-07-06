@@ -48,13 +48,14 @@ export async function runHooks(configDb, tableId, event, ctx) {
     }
   }
 
-  // Also run programmatically registered hooks
-  const key = `${tableId}:${event}`;
-  for (const fn of (_registry.get(key) ?? [])) {
-    try {
-      await fn(ctx);
-    } catch (err) {
-      ctx.messages.push({ type: 'warning', text: `Hook failed: ${err.message}` });
+  // Run programmatically registered hooks (table-specific and wildcard)
+  for (const key of [`${tableId}:${event}`, `*:${event}`]) {
+    for (const fn of (_registry.get(key) ?? [])) {
+      try {
+        await fn(ctx);
+      } catch (err) {
+        ctx.messages.push({ type: 'warning', text: `Hook failed: ${err.message}` });
+      }
     }
   }
 }

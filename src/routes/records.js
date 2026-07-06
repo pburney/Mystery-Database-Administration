@@ -38,7 +38,8 @@ router.get('/:tableId/:pk', requireLogin, checkPermission('select'), async (req,
 router.post('/:tableId', requireLogin, checkPermission('insert'), async (req, res, next) => {
   try {
     const tableId = parseInt(req.params.tableId, 10);
-    const result = await insertRecord(getConfigDb(), tableId, req.body);
+    const meta = { userId: req.user?.userId, username: req.user?.username, ipAddress: req.ip };
+    const result = await insertRecord(getConfigDb(), tableId, req.body, meta);
     res.status(201).json({ status: 'ok', message: 'Record created', data: result });
   } catch (err) {
     next(err);
@@ -48,7 +49,8 @@ router.post('/:tableId', requireLogin, checkPermission('insert'), async (req, re
 router.put('/:tableId/:pk', requireLogin, checkPermission('update'), async (req, res, next) => {
   try {
     const tableId = parseInt(req.params.tableId, 10);
-    const result = await updateRecord(getConfigDb(), tableId, req.params.pk, req.body);
+    const meta = { userId: req.user?.userId, username: req.user?.username, ipAddress: req.ip };
+    const result = await updateRecord(getConfigDb(), tableId, req.params.pk, req.body, meta);
     res.json({ status: 'ok', message: `${result.affected} row(s) updated`, data: result });
   } catch (err) {
     next(err);
@@ -69,7 +71,8 @@ router.get('/:tableId/fk-options/:field', requireLogin, checkPermission('select'
 router.delete('/:tableId/:pk', requireLogin, checkPermission('delete'), async (req, res, next) => {
   try {
     const tableId = parseInt(req.params.tableId, 10);
-    const result = await deleteRecord(getConfigDb(), tableId, req.params.pk);
+    const meta = { userId: req.user?.userId, username: req.user?.username, ipAddress: req.ip };
+    const result = await deleteRecord(getConfigDb(), tableId, req.params.pk, meta);
     res.json({ status: 'ok', message: `${result.affected} row(s) deleted`, data: result });
   } catch (err) {
     next(err);

@@ -1,27 +1,30 @@
 import { api } from '../api.js';
 
-export function render(root) {
+export async function render(root) {
+  const brandRes = await api.get('/auth/branding');
+  const { logoUrl, appName, subtitle } = brandRes.status === 'ok'
+    ? brandRes.data
+    : { logoUrl: '/images/mystery-logo.png', appName: 'Mystery', subtitle: 'Database Admin Interface' };
+
   root.innerHTML = `
-    <div class="min-h-screen flex items-center justify-center">
-      <div class="bg-white shadow-md rounded-lg p-8 w-full max-w-sm">
-        <h1 class="text-2xl font-bold mb-1 text-center">Mystery</h1>
-        <p class="text-sm text-gray-500 text-center mb-6">Database Admin Interface</p>
-        <div id="flash" class="hidden mb-4 px-3 py-2 rounded text-sm"></div>
-        <form id="login-form" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1" for="username">Username</label>
+    <div class="login-wrap">
+      <div class="login-card">
+        <img class="login-logo" src="${logoUrl}" alt="${appName} logo">
+        <h1 class="login-title">${appName}</h1>
+        <p class="login-subtitle">${subtitle}</p>
+        <div id="flash"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="username">Username</label>
             <input id="username" name="username" type="text" autocomplete="username"
-              class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="admin" required>
+              class="form-input" placeholder="admin" required>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1" for="password">Password</label>
+          <div class="form-group">
+            <label class="form-label" for="password">Password</label>
             <input id="password" name="password" type="password" autocomplete="current-password"
-              class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required>
+              class="form-input" required>
           </div>
-          <button type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded transition">
+          <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">
             Sign in
           </button>
         </form>
@@ -30,11 +33,12 @@ export function render(root) {
   `;
 
   const form = root.querySelector('#login-form');
-  const flash = root.querySelector('#flash');
+  const flashEl = root.querySelector('#flash');
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
-    flash.className = 'hidden mb-4 px-3 py-2 rounded text-sm';
+    flashEl.className = '';
+    flashEl.textContent = '';
 
     const username = form.username.value.trim();
     const password = form.password.value;
@@ -43,8 +47,8 @@ export function render(root) {
     if (res.status === 'ok') {
       window.location.hash = '#/menu';
     } else {
-      flash.textContent = res.message || 'Login failed';
-      flash.className = 'mb-4 px-3 py-2 rounded text-sm bg-red-100 text-red-700';
+      flashEl.className = 'flash flash-error';
+      flashEl.textContent = res.message || 'Login failed';
     }
   });
 }

@@ -11,4 +11,6 @@ export default {
   configDbPath: process.env.CONFIG_DB_PATH || './mystery.db',
   sessionSecret: process.env.SESSION_SECRET || 'dev-secret-change-me',
   port: parseInt(process.env.PORT || '3000', 10),
+  https: process.env.HTTPS === 'true',
+  nodeEnv: process.env.NODE_ENV || 'development',
 };

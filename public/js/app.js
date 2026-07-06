@@ -1,5 +1,8 @@
 import { api } from './api.js';
 
+// Apply saved theme immediately (before first render) to avoid flash
+document.documentElement.dataset.theme = localStorage.getItem('mystery-theme') || 'plum';
+
 const app = document.getElementById('app');
 
 // Route handlers — each returns a {render} module
@@ -11,7 +14,6 @@ const routes = {
   'add':    () => import('./pages/form.js'),
   'edit':   () => import('./pages/form.js'),
   'delete': () => import('./pages/delete.js'),
-  // Admin pages added in Phase 4
 };
 
 async function navigate() {
@@ -24,6 +26,27 @@ async function navigate() {
     // form.js needs to know the mode
     const mod = await routes[route]();
     mod.render(app, [route, ...params]);
+    return;
+  }
+
+  if (route === 'admin') {
+    const section = params[0];
+    if (section === 'tables') {
+      const mod = await import('./pages/admin/tables.js');
+      mod.render(app, params.slice(1));
+      return;
+    }
+    if (section === 'users') {
+      const mod = await import('./pages/admin/users.js');
+      mod.render(app, params.slice(1));
+      return;
+    }
+    if (section === 'groups') {
+      const mod = await import('./pages/admin/groups.js');
+      mod.render(app, params.slice(1));
+      return;
+    }
+    window.location.hash = '#/admin/tables';
     return;
   }
 

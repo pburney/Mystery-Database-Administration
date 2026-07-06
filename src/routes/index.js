@@ -6,6 +6,7 @@ import menuRouter from './menu.js';
 import adminTablesRouter from './admin/tables.js';
 import adminGroupsRouter from './admin/groups.js';
 import adminUsersRouter from './admin/users.js';
+import adminFkRouter from './admin/fk.js';
 
 const router = Router();
 
@@ -16,7 +17,6 @@ router.use('/menu', menuRouter);
 router.use('/admin/tables', adminTablesRouter);
 router.use('/admin/groups', adminGroupsRouter);
 router.use('/admin/users', adminUsersRouter);
-
-// Phases 5-6 will add plugins router
+router.use('/admin/fk', adminFkRouter);
 
 export default router;

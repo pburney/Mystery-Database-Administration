@@ -43,7 +43,11 @@ router.put('/:id', async (req, res) => {
   if (!user) return res.status(404).json({ status: 'error', message: 'Not found', data: null });
 
   const updates = { user_email, user_first_name, user_last_name, is_active };
-  if (user_password) updates.user_password = await bcrypt.hash(user_password, 12);
+  if (user_password) {
+    updates.user_password = await bcrypt.hash(user_password, 12);
+    updates.password_is_default = 0;
+    db.prepare(`DELETE FROM sessions WHERE user_id = ?`).run(req.params.id);
+  }
 
   const setClauses = Object.entries(updates)
     .filter(([, v]) => v !== undefined)
