@@ -49,7 +49,7 @@ router.get('/branding', (req, res) => {
     status: 'ok',
     message: 'ok',
     data: {
-      logoUrl:  get('logo_url')  ?? '/images/mystery-logo.png',
+      logoUrl:  get('logo_url')  ?? `${config.basePath}/images/mystery-logo.png`,
       appName:  get('app_name')  ?? 'Mystery',
       subtitle: get('subtitle')  ?? 'Database Admin Interface',
     },

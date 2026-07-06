@@ -46,7 +46,13 @@ router.put('/:id', async (req, res) => {
   if (user_password) {
     updates.user_password = await bcrypt.hash(user_password, 12);
     updates.password_is_default = 0;
-    db.prepare(`DELETE FROM sessions WHERE user_id = ?`).run(req.params.id);
+    // Invalidate all sessions except the current one (so the admin stays logged in after changing their own password)
+    const currentSession = req.cookies?.mystery_session;
+    if (currentSession) {
+      db.prepare(`DELETE FROM sessions WHERE user_id = ? AND session_id != ?`).run(req.params.id, currentSession);
+    } else {
+      db.prepare(`DELETE FROM sessions WHERE user_id = ?`).run(req.params.id);
+    }
   }
 
   const setClauses = Object.entries(updates)
