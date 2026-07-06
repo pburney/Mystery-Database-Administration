@@ -4,5 +4,9 @@ node_modules/
 *.db
 *.db-shm
 *.db-wal
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 examples/chinook-demo.sqlite
 coverage/
+graphify-out/
