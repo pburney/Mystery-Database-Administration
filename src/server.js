@@ -1,4 +1,5 @@
 import express from 'express';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 import helmet from 'helmet';
@@ -63,12 +64,19 @@ async function start() {
 
   app.use('/api', apiRouter);
   await loadPlugins(app, getConfigDb());
-  app.use(express.static(resolve(__dirname, '..', 'public')));
+  app.use(express.static(resolve(__dirname, '..', 'public'), { index: false }));
 
   // SPA fallback — serve index.html for any non-API GET
-  app.get('*', (_req, res) => {
-    res.sendFile(resolve(__dirname, '..', 'public', 'index.html'));
-  });
+  const indexPath = resolve(__dirname, '..', 'public', 'index.html');
+  const indexHtml = readFileSync(indexPath, 'utf-8');
+  const serveIndex = config.basePath
+    ? (_req, res) => {
+        const html = indexHtml.replace('<head>', `<head>\n  <base href="${config.basePath}/">`);
+        res.type('html').send(html);
+      }
+    : (_req, res) => res.sendFile(indexPath);
+
+  app.get('*', serveIndex);
 
   // Error handler
   app.use((err, _req, res, _next) => {

@@ -1,4 +1,5 @@
-const BASE = '/api';
+const basePath = document.querySelector('base')?.getAttribute('href')?.replace(/\/$/, '') ?? '';
+const BASE = basePath + '/api';
 
 async function request(method, path, body) {
   const opts = {

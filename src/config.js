@@ -13,4 +13,5 @@ export default {
   port: parseInt(process.env.PORT || '3000', 10),
   https: process.env.HTTPS === 'true',
   nodeEnv: process.env.NODE_ENV || 'development',
+  basePath: process.env.BASE_PATH || '',
 };
