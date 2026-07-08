@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import config from '../config.js';
 
 const SESSION_HOURS = 4;
 
@@ -48,6 +49,24 @@ export function getSession(db, sessionId) {
   ).all(session.user_id).map(r => r.group_id);
 
   return publicUser(session, groups);
+}
+
+export function getNoAuthUser(db, username) {
+  const row = db.prepare(
+    `SELECT * FROM users WHERE user_username = ? AND is_active = 1`
+  ).get(username);
+
+  if (!row) return null;
+
+  const groups = db.prepare(
+    `SELECT group_id FROM users_groups WHERE user_id = ?`
+  ).all(row.user_id).map(r => r.group_id);
+
+  return publicUser(row, groups);
+}
+
+export function resolveRequestUser(db, sessionId) {
+  return config.noAuth ? getNoAuthUser(db, config.noAuthUser) : getSession(db, sessionId);
 }
 
 export function isAdmin(user) {

@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import express from 'express';
 import { buildTestDb } from '../fixtures/db.js';
 import { applySchema } from '../../src/db/schema.js';
 import { seed } from '../../src/db/seed.js';
+import config from '../../src/config.js';
 
 // Lightweight app factory — mirrors server.js but uses test db
 async function buildApp(db) {
@@ -146,5 +147,39 @@ describe('POST /api/auth/login', () => {
   it('GET /api/auth/me returns 401 without session', async () => {
     const res = await httpRequest(serverAddress, 'GET', '/api/auth/me', null);
     expect(res.status).toBe(401);
+  });
+
+  describe('NO_AUTH mode', () => {
+    afterEach(() => {
+      config.noAuth = false;
+      config.noAuthUser = '';
+    });
+
+    it('GET /api/auth/me auto-authenticates as NO_AUTH_USER with no cookie', async () => {
+      config.noAuth = true;
+      config.noAuthUser = 'reader';
+      const res = await httpRequest(serverAddress, 'GET', '/api/auth/me', null);
+      const body = res.json();
+      expect(res.status).toBe(200);
+      expect(body.data.username).toBe('reader');
+    });
+
+    it('GET /api/auth/me still 401s if NO_AUTH_USER names no one', async () => {
+      config.noAuth = true;
+      config.noAuthUser = 'nobody';
+      const res = await httpRequest(serverAddress, 'GET', '/api/auth/me', null);
+      expect(res.status).toBe(401);
+    });
+
+    it('a valid session cookie is ignored while NO_AUTH is on', async () => {
+      const loginRes = await httpRequest(serverAddress, 'POST', '/api/auth/login', { username: 'admin', password: 'admin' });
+      const cookie = loginRes.headers['set-cookie']?.[0]?.split(';')[0] ?? '';
+
+      config.noAuth = true;
+      config.noAuthUser = 'reader';
+      const res = await httpRequest(serverAddress, 'GET', '/api/auth/me', null, cookie);
+      const body = res.json();
+      expect(body.data.username).toBe('reader');
+    });
   });
 });

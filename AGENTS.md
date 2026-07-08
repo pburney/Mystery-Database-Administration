@@ -296,7 +296,7 @@ TARGET_DB=mysql://user:password@127.0.0.1:3307/myapp
 
 ## API Summary
 
-All responses follow `{ status, message, data }` structure. All non-auth routes require a valid `mystery_session` cookie.
+All responses follow `{ status, message, data }` structure. All non-auth routes require a valid `mystery_session` cookie, unless `NO_AUTH=true` is set (see README's Environment Variables section) — in which case every request is auto-authenticated as `NO_AUTH_USER`, no cookie needed.
 
 | Method | Path | Description |
 |--------|------|-------------|

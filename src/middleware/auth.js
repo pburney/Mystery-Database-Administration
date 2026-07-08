@@ -1,9 +1,9 @@
-import { getSession } from '../services/auth-service.js';
+import { resolveRequestUser } from '../services/auth-service.js';
 import { getConfigDb } from '../db/config-db.js';
 
 export function requireLogin(req, res, next) {
   const sessionId = req.cookies?.mystery_session;
-  const user = getSession(getConfigDb(), sessionId);
+  const user = resolveRequestUser(getConfigDb(), sessionId);
   if (!user) {
     return res.status(401).json({ status: 'error', message: 'Not authenticated', data: null });
   }

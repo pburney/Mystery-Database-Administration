@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import { login, logout, getSession } from '../services/auth-service.js';
+import { login, logout, resolveRequestUser } from '../services/auth-service.js';
 import { getConfigDb } from '../db/config-db.js';
 import config from '../config.js';
 
@@ -58,7 +58,7 @@ router.get('/branding', (req, res) => {
 
 router.get('/me', (req, res) => {
   const sessionId = req.cookies?.mystery_session;
-  const user = getSession(getConfigDb(), sessionId);
+  const user = resolveRequestUser(getConfigDb(), sessionId);
   if (!user) {
     return res.status(401).json({ status: 'error', message: 'Not authenticated', data: null });
   }

@@ -273,6 +273,14 @@ a:hover { text-decoration: underline; }
   transition: background-color 0.1s, color 0.1s;
 }
 .btn:hover { text-decoration: none; }
+.btn:disabled {
+  background-color: var(--m-row-alt);
+  color: var(--m-text-muted);
+  border-color: var(--m-border);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.btn:disabled:hover { background-color: var(--m-row-alt); }
 
 .btn-primary {
   background-color: var(--m-accent);

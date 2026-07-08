@@ -14,4 +14,6 @@ export default {
   https: process.env.HTTPS === 'true',
   nodeEnv: process.env.NODE_ENV || 'development',
   basePath: process.env.BASE_PATH || '',
+  noAuth: process.env.NO_AUTH === 'true',
+  noAuthUser: process.env.NO_AUTH_USER || '',
 };

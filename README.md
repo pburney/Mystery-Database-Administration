@@ -89,6 +89,17 @@ The AI can produce the exact SQL to configure Mystery for your schema.
 | `PORT` | No | `3000` | Port to listen on |
 | `HTTPS` | No | `false` | Set `true` behind a TLS proxy (enables secure cookie flag + trust proxy) |
 | `NODE_ENV` | No | `development` | Set `production` for combined-format access logs |
+| `NO_AUTH` | No | `false` | Set `true` to skip the login screen entirely (see below) |
+| `NO_AUTH_USER` | No | — | Username to auto-authenticate as when `NO_AUTH=true` |
+
+**`NO_AUTH` mode:** intended for disposable, localhost-only, single-user instances (e.g. a CLI
+tool spinning up a throwaway web view of its own database) — not for anything multi-user or
+exposed beyond localhost. When `NO_AUTH=true`, every request is treated as already logged in as
+`NO_AUTH_USER`, skipping the password screen entirely. It only changes *how* a user is identified,
+never *what* they're allowed to do — point `NO_AUTH_USER` at a read-only user and the instance
+stays read-only; point it at an admin and it behaves like an admin session. If `NO_AUTH_USER`
+doesn't name a real, active user, requests fail closed with 401 just like an invalid session
+would.
 
 **Connection string formats:**
 ```

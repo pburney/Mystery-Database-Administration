@@ -35,9 +35,16 @@ export async function render(root, [mode, tableId, pkValue] = []) {
     return;
   }
 
-  const { table, fields, foreignKeys = [] } = schemaRes.data;
+  const { table, fields, foreignKeys = [], permissions } = schemaRes.data;
   renderNav(root, { title: table.table_display_name, crumbHref: `#/list/${tableId}` });
   root.querySelector('#form-title').textContent = `${isEdit ? 'Edit' : 'Add'} ${table.table_display_data_word}`;
+
+  const canSave = isEdit ? permissions?.updateAccess : permissions?.insertAccess;
+  const saveBtn = root.querySelector('#record-form .btn-primary');
+  if (!canSave) {
+    saveBtn.disabled = true;
+    flash(root.querySelector('#flash-area'), "Read-only access — you can view this record but you don't have permission to save changes.", 'info');
+  }
 
   // Build FK field → options map, fetching all in parallel
   const fkByField = Object.fromEntries(foreignKeys.map(fk => [fk.local_table_field, fk]));
@@ -67,6 +74,7 @@ export async function render(root, [mode, tableId, pkValue] = []) {
 
   root.querySelector('#record-form').addEventListener('submit', async e => {
     e.preventDefault();
+    if (!canSave) return;
     const data = collectFormData(e.target, fields);
     const res = isEdit
       ? await api.put(`/records/${tableId}/${pkValue}`, data)

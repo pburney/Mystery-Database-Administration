@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { buildTestDb } from '../fixtures/db.js';
-import { login, logout, getSession, isAdmin } from '../../src/services/auth-service.js';
+import { login, logout, getSession, isAdmin, getNoAuthUser, resolveRequestUser } from '../../src/services/auth-service.js';
+import config from '../../src/config.js';
 
 let db;
 
@@ -56,6 +57,49 @@ describe('logout()', () => {
     const { sessionId } = login(db, 'admin', 'admin');
     logout(db, sessionId);
     expect(getSession(db, sessionId)).toBeNull();
+  });
+});
+
+describe('getNoAuthUser()', () => {
+  it('returns the named user with no password check', () => {
+    const user = getNoAuthUser(db, 'reader');
+    expect(user).not.toBeNull();
+    expect(user.username).toBe('reader');
+    expect(user.isAdmin).toBe(false);
+  });
+
+  it('returns null for an unknown username', () => {
+    expect(getNoAuthUser(db, 'nobody')).toBeNull();
+  });
+
+  it('returns null for an inactive user', () => {
+    db.prepare(`UPDATE users SET is_active = 0 WHERE user_username = 'reader'`).run();
+    expect(getNoAuthUser(db, 'reader')).toBeNull();
+  });
+});
+
+describe('resolveRequestUser()', () => {
+  afterEach(() => {
+    config.noAuth = false;
+    config.noAuthUser = '';
+  });
+
+  it('falls back to session lookup when NO_AUTH is off', () => {
+    const { sessionId } = login(db, 'admin', 'admin');
+    const user = resolveRequestUser(db, sessionId);
+    expect(user.username).toBe('admin');
+  });
+
+  it('ignores the session id and resolves NO_AUTH_USER when NO_AUTH is on', () => {
+    config.noAuth = true;
+    config.noAuthUser = 'reader';
+    expect(resolveRequestUser(db, 'not-a-real-session').username).toBe('reader');
+  });
+
+  it('fails closed when NO_AUTH_USER names no one', () => {
+    config.noAuth = true;
+    config.noAuthUser = 'nobody';
+    expect(resolveRequestUser(db, 'irrelevant')).toBeNull();
   });
 });
 
