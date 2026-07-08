@@ -34,3 +34,25 @@ export async function getFKOptions(configDb, tableId, localField) {
     label: labelFields.map(f => row[f]).filter(v => v != null).join(' '),
   }));
 }
+
+export async function getFKSearchMatches(configDb, tableId, q) {
+  const fks = getForeignKeysForTable(configDb, tableId);
+  const matches = [];
+
+  for (const fk of fks) {
+    const foreignTable = getTable(configDb, fk.foreign_table_id);
+    const adapter = getTargetAdapter(configDb, foreignTable?.table_connection_id ?? null);
+
+    const labelFields = fk.foreign_table_label_field.split(',').map(f => f.trim());
+    const labelConds = labelFields.map(f => `"${f}" LIKE ?`).join(' OR ');
+    const sql = `SELECT DISTINCT "${fk.foreign_table_value_field}" AS v FROM "${fk.foreign_real_name}" WHERE ${labelConds}`;
+    const params = labelFields.map(() => `%${q}%`);
+
+    const rows = await adapter.select(sql, params);
+    const values = rows.map(row => row.v).filter(v => v != null);
+
+    if (values.length) matches.push({ localField: fk.local_table_field, values });
+  }
+
+  return matches;
+}

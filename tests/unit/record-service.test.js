@@ -48,6 +48,36 @@ describe('listRecords()', () => {
   it('throws 404 for unknown table', async () => {
     await expect(listRecords(configDb, 9999)).rejects.toMatchObject({ status: 404 });
   });
+
+  it('finds records via a foreign-key-resolved label, not just local columns', async () => {
+    targetDb.exec(`
+      CREATE TABLE categories (
+        category_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT NOT NULL
+      )
+    `);
+    targetDb.prepare(`INSERT INTO categories (name) VALUES ('Electronics')`).run();
+    targetDb.prepare(`INSERT INTO categories (name) VALUES ('Kitchenware')`).run();
+
+    targetDb.exec(`ALTER TABLE products ADD COLUMN category_id INTEGER`);
+    targetDb.prepare(`UPDATE products SET category_id = 1 WHERE name = 'Widget'`).run();
+    targetDb.prepare(`UPDATE products SET category_id = 2 WHERE name = 'Gadget'`).run();
+
+    const { lastInsertRowid: categoriesTableId } = configDb.prepare(
+      `INSERT INTO tables (table_real_name, table_display_name, table_primary_key)
+       VALUES ('categories', 'Categories', 'category_id')`
+    ).run();
+
+    configDb.prepare(
+      `INSERT INTO foreign_keys (local_table_id, local_table_field, foreign_table_id, foreign_table_value_field, foreign_table_label_field)
+       VALUES (?, 'category_id', ?, 'category_id', 'name')`
+    ).run(tableId, categoriesTableId);
+
+    // 'Electronics' isn't a column value on products at all — only reachable via the category FK.
+    const result = await listRecords(configDb, tableId, { page: 1, rows: 10, q: 'Electronics' });
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].name).toBe('Widget');
+  });
 });
 
 describe('getRecord()', () => {

@@ -46,7 +46,7 @@ async function renderList(root) {
         </table>
       </div>
     </div>
-  `;
+  `);
 
   const res = await api.get('/admin/tables');
   if (res.status !== 'ok') {
@@ -231,7 +231,7 @@ async function renderForm(root, tableId) {
         </div>` : ''}
       </div>
     </div>
-  `;
+  `);
 
   let tableData = null;
   if (isEdit) {

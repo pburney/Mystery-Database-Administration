@@ -1,6 +1,7 @@
 import { getTargetAdapter } from '../db/target-db.js';
 import { getTable } from './table-service.js';
 import { runHooks } from '../hooks/hook-runner.js';
+import { getFKSearchMatches } from './foreign-key-service.js';
 
 function makeCtx(overrides) {
   return { requestData: {}, pkValue: null, adapter: null, messages: [], tableId: null, tableName: '', userId: null, username: null, ipAddress: null, ...overrides };
@@ -23,10 +24,22 @@ export async function listRecords(configDb, tableId, { page = 1, rows = 25, orde
   if (q) {
     const fields = await adapter.describeTable(table.table_real_name);
     const textFields = fields.filter(f => /char|text|varchar/.test(f.type));
+    const conditions = [];
+
     if (textFields.length) {
-      const conditions = textFields.map(f => `\`${f.name}\` LIKE ?`).join(' OR ');
-      sql = `SELECT * FROM (${sql}) _m WHERE ${conditions}`;
+      conditions.push(...textFields.map(f => `\`${f.name}\` LIKE ?`));
       textFields.forEach(() => params.push(`%${q}%`));
+    }
+
+    const fkMatches = await getFKSearchMatches(configDb, tableId, q);
+    for (const { localField, values } of fkMatches) {
+      const placeholders = values.map(() => '?').join(',');
+      conditions.push(`\`${localField}\` IN (${placeholders})`);
+      params.push(...values);
+    }
+
+    if (conditions.length) {
+      sql = `SELECT * FROM (${sql}) _m WHERE ${conditions.join(' OR ')}`;
     }
   }
 
