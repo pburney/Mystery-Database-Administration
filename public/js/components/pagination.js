@@ -1,3 +1,5 @@
+import { t } from '../lib/i18n.js';
+
 export function renderPagination(container, { page, rows, total, onPage }) {
   const totalPages = Math.max(1, Math.ceil(total / rows));
   container.innerHTML = '';
@@ -17,7 +19,7 @@ export function renderPagination(container, { page, rows, total, onPage }) {
 
   const span = document.createElement('span');
   span.className = 'page-info';
-  span.textContent = `Page ${page} of ${totalPages} (${total} total)`;
+  span.textContent = t('pagination.info', { page, totalPages, total });
   container.appendChild(span);
 
   container.appendChild(make('›', page + 1, page >= totalPages));

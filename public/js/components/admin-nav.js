@@ -1,7 +1,9 @@
+import { t } from '../lib/i18n.js';
+
 const TABS = [
-  { key: 'tables', label: 'Tables', href: '#/admin/tables' },
-  { key: 'users',  label: 'Users',  href: '#/admin/users' },
-  { key: 'groups', label: 'Groups', href: '#/admin/groups' },
+  { key: 'tables', labelKey: 'adminNav.tables', href: '#/admin/tables' },
+  { key: 'users',  labelKey: 'adminNav.users',  href: '#/admin/users' },
+  { key: 'groups', labelKey: 'adminNav.groups', href: '#/admin/groups' },
 ];
 
 export function renderAdminNav(root, active) {
@@ -10,8 +12,8 @@ export function renderAdminNav(root, active) {
 
   const nav = document.createElement('nav');
   nav.className = 'admin-subnav';
-  nav.innerHTML = TABS.map(t =>
-    `<a href="${t.href}" class="admin-subnav-tab${t.key === active ? ' active' : ''}">${t.label}</a>`
+  nav.innerHTML = TABS.map(tab =>
+    `<a href="${tab.href}" class="admin-subnav-tab${tab.key === active ? ' active' : ''}">${t(tab.labelKey)}</a>`
   ).join('');
 
   const content = root.querySelector('.page-wrap, .page-wrap-sm, .page-wrap-xs');

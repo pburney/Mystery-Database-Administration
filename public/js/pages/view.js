@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { renderNav, getUser } from '../components/nav.js';
 import { flash } from '../components/flash.js';
 import { fieldLabel } from '../components/field-renderer.js';
+import { t } from '../lib/i18n.js';
 
 export async function render(root, [tableId, pkValue] = []) {
   await getUser();
@@ -11,11 +12,11 @@ export async function render(root, [tableId, pkValue] = []) {
     <div class="page-wrap-sm">
       <div id="flash-area"></div>
       <div class="page-header">
-        <h2 id="table-title" class="page-title">View Record</h2>
+        <h2 id="table-title" class="page-title">${t('view.title')}</h2>
         <div class="btn-group">
-          <a href="#/list/${tableId}" class="back-link">← Back</a>
-          <a href="#/edit/${tableId}/${pkValue}" class="btn btn-edit">Edit</a>
-          <a href="#/delete/${tableId}/${pkValue}" class="btn btn-danger">Delete</a>
+          <a href="#/list/${tableId}" class="back-link">${t('common.back')}</a>
+          <a href="#/edit/${tableId}/${pkValue}" class="btn btn-edit">${t('common.edit')}</a>
+          <a href="#/delete/${tableId}/${pkValue}" class="btn btn-danger">${t('common.delete')}</a>
         </div>
       </div>
       <div id="content" class="page-card"></div>
@@ -35,7 +36,7 @@ export async function render(root, [tableId, pkValue] = []) {
   const { table, fields, foreignKeys = [] } = schemaRes.data;
   const record = recordRes.data;
   renderNav(root, { title: table.table_display_name, crumbHref: `#/list/${tableId}` });
-  root.querySelector('#table-title').textContent = `View ${table.table_display_data_word}`;
+  root.querySelector('#table-title').textContent = t('view.titleWord', { word: table.table_display_data_word });
 
   // Resolve FK labels
   const fkLookup = {};

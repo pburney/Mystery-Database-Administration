@@ -1,10 +1,9 @@
 import { api } from '../api.js';
+import { loadBranding } from '../lib/branding.js';
+import { t } from '../lib/i18n.js';
 
 export async function render(root) {
-  const brandRes = await api.get('/auth/branding');
-  const { logoUrl, appName, subtitle } = brandRes.status === 'ok'
-    ? brandRes.data
-    : { logoUrl: '/images/mystery-logo.png', appName: 'Mystery', subtitle: 'Database Admin Interface' };
+  const { logoUrl, appName, subtitle } = await loadBranding();
 
   root.innerHTML = `
     <div class="login-wrap">
@@ -15,17 +14,17 @@ export async function render(root) {
         <div id="flash"></div>
         <form id="login-form">
           <div class="form-group">
-            <label class="form-label" for="username">Username</label>
+            <label class="form-label" for="username">${t('login.username')}</label>
             <input id="username" name="username" type="text" autocomplete="username"
               class="form-input" placeholder="admin" required>
           </div>
           <div class="form-group">
-            <label class="form-label" for="password">Password</label>
+            <label class="form-label" for="password">${t('login.password')}</label>
             <input id="password" name="password" type="password" autocomplete="current-password"
               class="form-input" required>
           </div>
           <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem">
-            Sign in
+            ${t('login.signIn')}
           </button>
         </form>
       </div>
@@ -48,7 +47,7 @@ export async function render(root) {
       window.location.hash = '#/menu';
     } else {
       flashEl.className = 'flash flash-error';
-      flashEl.textContent = res.message || 'Login failed';
+      flashEl.textContent = res.message || t('login.failed');
     }
   });
 }

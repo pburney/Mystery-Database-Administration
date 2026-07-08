@@ -1,7 +1,12 @@
 import { api } from './api.js';
+import { loadBranding, getBranding } from './lib/branding.js';
+import { applyLocale } from './lib/i18n.js';
 
 // Apply saved theme immediately (before first render) to avoid flash
 document.documentElement.dataset.theme = localStorage.getItem('mystery-theme') || 'plum';
+
+// Apply saved locale immediately (before first render) to avoid flash
+applyLocale();
 
 const app = document.getElementById('app');
 
@@ -17,6 +22,12 @@ const routes = {
 };
 
 async function navigate() {
+  // Resolve branding once before any page renders, so nav.js's synchronous
+  // getBranding() reads never see the placeholder defaults, then reflect it
+  // in the tab title (there's no server templating to set <title> per-app).
+  await loadBranding();
+  document.title = getBranding().appName;
+
   const hash = window.location.hash.replace(/^#\/?/, '');
   const parts = hash.split('/');
   const route = parts[0] || '';

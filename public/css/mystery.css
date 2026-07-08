@@ -129,6 +129,9 @@ a:hover { text-decoration: underline; }
 }
 
 .nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--m-nav-text);
@@ -136,6 +139,11 @@ a:hover { text-decoration: underline; }
   letter-spacing: -0.01em;
 }
 .nav-brand:hover { color: var(--m-nav-hover); text-decoration: none; }
+
+.nav-logo {
+  height: 1.5rem;
+  width: auto;
+}
 
 .nav-sep {
   color: color-mix(in srgb, var(--m-nav-text) 40%, transparent);
@@ -190,27 +198,81 @@ a:hover { text-decoration: underline; }
 }
 .nav-logout:hover { color: #fca5a5; text-decoration: none; }
 
-/* Theme picker */
-.theme-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
+/* Nav dropdowns (theme + locale) */
+.nav-dropdown {
+  position: relative;
 }
 
+.nav-dropdown-toggle {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.nav-dropdown-toggle:hover { border-color: color-mix(in srgb, var(--m-nav-text) 40%, transparent); }
+.nav-dropdown.open .nav-dropdown-toggle { border-color: var(--m-nav-text); }
+
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  min-width: 150px;
+  background: var(--m-nav-bg);
+  border: 1px solid color-mix(in srgb, var(--m-nav-text) 25%, transparent);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  padding: 0.25rem;
+  z-index: 60;
+}
+.nav-dropdown.open .nav-dropdown-menu {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  background: none;
+  border: none;
+  border-radius: 0.25rem;
+  color: var(--m-nav-text);
+  font-size: 0.8125rem;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-dropdown-option:hover { background: color-mix(in srgb, var(--m-nav-text) 12%, transparent); }
+.nav-dropdown-option.active { font-weight: 600; }
+
+/* Theme picker */
 .theme-swatch {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: transform 0.1s, border-color 0.1s;
   flex-shrink: 0;
 }
-.theme-swatch:hover { transform: scale(1.2); }
-.theme-swatch.active { border-color: var(--m-nav-text); }
 .theme-swatch[data-t="plum"]  { background: #7c3aed; }
 .theme-swatch[data-t="slate"] { background: #475569; }
 .theme-swatch[data-t="ocean"] { background: #0284c7; }
+
+.nav-dropdown-toggle.theme-swatch-toggle {
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+}
+
+/* Locale picker */
+.locale-flag-toggle {
+  font-size: 1.125rem;
+  line-height: 1;
+  padding: 0.125rem 0.25rem;
+}
 
 /* ============================================================
    LAYOUT

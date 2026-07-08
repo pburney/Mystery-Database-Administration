@@ -2,6 +2,8 @@ import { api } from '../../api.js';
 import { renderNav, getUser } from '../../components/nav.js';
 import { renderAdminNav } from '../../components/admin-nav.js';
 import { flash } from '../../components/flash.js';
+import { getBranding } from '../../lib/branding.js';
+import { t } from '../../lib/i18n.js';
 
 export async function render(root, params = []) {
   const user = await getUser();
@@ -20,7 +22,7 @@ export async function render(root, params = []) {
 }
 
 async function renderList(root) {
-  renderNav(root, { title: 'Admin: Tables', activePath: 'admin' });
+  renderNav(root, { title: t('adminTables.crumb'), activePath: 'admin' });
 
   root.innerHTML = '';
   renderAdminNav(root, 'tables');
@@ -28,18 +30,18 @@ async function renderList(root) {
     <div class="page-wrap">
       <div id="flash-area"></div>
       <div class="page-header">
-        <h2 class="page-title">Table Configuration</h2>
-        <a href="#/admin/tables/new" class="btn btn-primary">+ Add Table</a>
+        <h2 class="page-title">${t('adminTables.heading')}</h2>
+        <a href="#/admin/tables/new" class="btn btn-primary">${t('adminTables.addButton')}</a>
       </div>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
             <tr>
-              <th>Display Name</th>
-              <th>Real Table Name</th>
-              <th>Data Word</th>
-              <th>In Menu?</th>
-              <th class="col-actions">Actions</th>
+              <th>${t('adminTables.colDisplayName')}</th>
+              <th>${t('adminTables.colRealName')}</th>
+              <th>${t('adminTables.colDataWord')}</th>
+              <th>${t('adminTables.colInMenu')}</th>
+              <th class="col-actions">${t('common.actions')}</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -56,20 +58,20 @@ async function renderList(root) {
 
   const tbody = root.querySelector('#tbody');
   if (!res.data.length) {
-    tbody.innerHTML = `<tr><td colspan="5" class="table-empty">No tables configured. Add one to get started.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="table-empty">${t('adminTables.empty')}</td></tr>`;
     return;
   }
 
-  for (const t of res.data) {
+  for (const tbl of res.data) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><strong>${esc(t.table_display_name)}</strong>${t.table_display_comment ? `<br><span class="text-muted" style="font-size:0.8em">${esc(t.table_display_comment)}</span>` : ''}</td>
-      <td><code>${esc(t.table_real_name)}</code></td>
-      <td>${esc(t.table_display_data_word)}</td>
-      <td>${t.table_display_in_portal ? '✓' : '<span class="text-muted">—</span>'}</td>
+      <td><strong>${esc(tbl.table_display_name)}</strong>${tbl.table_display_comment ? `<br><span class="text-muted" style="font-size:0.8em">${esc(tbl.table_display_comment)}</span>` : ''}</td>
+      <td><code>${esc(tbl.table_real_name)}</code></td>
+      <td>${esc(tbl.table_display_data_word)}</td>
+      <td>${tbl.table_display_in_portal ? '✓' : '<span class="text-muted">—</span>'}</td>
       <td class="col-actions">
-        <a href="#/admin/tables/${t.table_id}" class="action-edit">Edit</a>
-        <button class="action-delete" data-id="${t.table_id}" data-name="${esc(t.table_display_name)}">Delete</button>
+        <a href="#/admin/tables/${tbl.table_id}" class="action-edit">${t('common.edit')}</a>
+        <button class="action-delete" data-id="${tbl.table_id}" data-name="${esc(tbl.table_display_name)}">${t('common.delete')}</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -79,11 +81,12 @@ async function renderList(root) {
     const btn = e.target.closest('[data-id]');
     if (!btn) return;
     const { id, name } = btn.dataset;
-    if (!confirm(`Delete table config for "${name}"?\n\nThis removes it from Mystery only — the actual database table is not affected.`)) return;
+    const { appName } = getBranding();
+    if (!confirm(t('adminTables.confirmDelete', { name, appName }))) return;
     const del = await api.del(`/admin/tables/${id}`);
     if (del.status === 'ok') {
       btn.closest('tr').remove();
-      flash(root.querySelector('#flash-area'), `"${name}" removed.`, 'success');
+      flash(root.querySelector('#flash-area'), t('adminTables.removed', { name }), 'success');
     } else {
       flash(root.querySelector('#flash-area'), del.message);
     }
@@ -92,7 +95,7 @@ async function renderList(root) {
 
 async function renderForm(root, tableId) {
   const isEdit = tableId !== null;
-  renderNav(root, { title: 'Admin: Tables', crumbHref: '#/admin/tables', activePath: 'admin' });
+  renderNav(root, { title: t('adminTables.crumb'), crumbHref: '#/admin/tables', activePath: 'admin' });
 
   root.innerHTML = '';
   renderAdminNav(root, 'tables');
@@ -100,132 +103,132 @@ async function renderForm(root, tableId) {
     <div class="page-wrap-sm">
       <div id="flash-area"></div>
       <div class="page-header">
-        <h2 id="form-title" class="page-title">${isEdit ? 'Edit Table' : 'Add Table'}</h2>
-        <a href="#/admin/tables" class="back-link">← Back to Tables</a>
+        <h2 id="form-title" class="page-title">${isEdit ? t('adminTables.editTitle') : t('adminTables.addTitle')}</h2>
+        <a href="#/admin/tables" class="back-link">${t('adminTables.backToList')}</a>
       </div>
       <div class="page-card">
         <form id="table-form">
           <fieldset class="admin-fieldset">
-            <legend class="admin-legend">Basic Info</legend>
+            <legend class="admin-legend">${t('adminTables.legendBasic')}</legend>
             <div class="form-group">
-              <label class="form-label" for="f-real">Real Table Name <span class="text-danger">*</span></label>
+              <label class="form-label" for="f-real">${t('adminTables.labelRealName')} <span class="text-danger">*</span></label>
               <input id="f-real" name="table_real_name" class="form-input" required placeholder="e.g. tracks">
-              <span class="form-hint">Exact name of the table in the target database</span>
+              <span class="form-hint">${t('adminTables.hintRealName')}</span>
             </div>
             <div class="form-group">
-              <label class="form-label" for="f-display">Display Name <span class="text-danger">*</span></label>
+              <label class="form-label" for="f-display">${t('adminTables.labelDisplayName')} <span class="text-danger">*</span></label>
               <input id="f-display" name="table_display_name" class="form-input" required placeholder="e.g. Tracks">
             </div>
             <div class="form-group">
-              <label class="form-label" for="f-comment">Menu Subtitle</label>
+              <label class="form-label" for="f-comment">${t('adminTables.labelMenuSubtitle')}</label>
               <input id="f-comment" name="table_display_comment" class="form-input" placeholder="Short description shown on menu card">
             </div>
             <div class="form-row-2">
               <div class="form-group">
-                <label class="form-label" for="f-word">Data Word</label>
+                <label class="form-label" for="f-word">${t('adminTables.labelDataWord')}</label>
                 <input id="f-word" name="table_display_data_word" class="form-input" placeholder="Record">
                 <span class="form-hint">Singular noun for one row (e.g. Track, Customer)</span>
               </div>
               <div class="form-group">
-                <label class="form-label" for="f-pk">Primary Key</label>
+                <label class="form-label" for="f-pk">${t('adminTables.labelPrimaryKey')}</label>
                 <input id="f-pk" name="table_primary_key" class="form-input" placeholder="id">
               </div>
             </div>
           </fieldset>
 
           <fieldset class="admin-fieldset">
-            <legend class="admin-legend">Browse Settings</legend>
+            <legend class="admin-legend">${t('adminTables.legendBrowse')}</legend>
             <div class="form-group">
-              <label class="form-label" for="f-fields">Display Fields</label>
+              <label class="form-label" for="f-fields">${t('adminTables.labelDisplayFields')}</label>
               <input id="f-fields" name="table_default_display_fields" class="form-input" placeholder="e.g. Name,Title,Price">
-              <span class="form-hint">Comma-separated column names to show in the list view. Leave blank to show all.</span>
+              <span class="form-hint">${t('adminTables.hintDisplayFields')}</span>
             </div>
             <div class="form-row-2">
               <div class="form-group">
-                <label class="form-label" for="f-rows">Rows per Page</label>
+                <label class="form-label" for="f-rows">${t('adminTables.labelRowsPerPage')}</label>
                 <input id="f-rows" name="table_default_display_rows" type="number" step="1" min="5" max="200" class="form-input" placeholder="25">
               </div>
               <div class="form-group">
-                <label class="form-label" for="f-order">Default Sort Field</label>
+                <label class="form-label" for="f-order">${t('adminTables.labelDefaultSort')}</label>
                 <input id="f-order" name="table_default_order_field" class="form-input" placeholder="Leave blank for no default sort">
               </div>
             </div>
             <div class="form-row-2">
               <div class="form-group">
-                <label class="form-label" for="f-action">Default Action</label>
+                <label class="form-label" for="f-action">${t('adminTables.labelDefaultAction')}</label>
                 <select id="f-action" name="table_default_action" class="form-select">
-                  <option value="list">List (browse all records)</option>
-                  <option value="view">View (show a single record)</option>
+                  <option value="list">${t('adminTables.optionList')}</option>
+                  <option value="view">${t('adminTables.optionView')}</option>
                 </select>
               </div>
               <div class="form-group" style="justify-content:flex-end">
                 <label class="form-label form-checkbox-label">
                   <input type="checkbox" name="table_default_reverse_sort" value="1" class="form-checkbox">
-                  Reverse sort by default
+                  ${t('adminTables.labelReverseSort')}
                 </label>
               </div>
             </div>
           </fieldset>
 
           <fieldset class="admin-fieldset">
-            <legend class="admin-legend">Visibility</legend>
+            <legend class="admin-legend">${t('adminTables.legendVisibility')}</legend>
             <div class="form-row-2">
               <div class="form-group">
                 <label class="form-label form-checkbox-label">
                   <input type="checkbox" name="table_display_in_portal" value="1" class="form-checkbox" checked>
-                  Show in main menu
+                  ${t('adminTables.labelShowInMenu')}
                 </label>
-                <span class="form-hint">Uncheck to hide this table from the home screen (useful for junction tables)</span>
+                <span class="form-hint">${t('adminTables.hintShowInMenu')}</span>
               </div>
               <div class="form-group">
                 <label class="form-label form-checkbox-label">
                   <input type="checkbox" name="table_is_many_to_many" value="1" class="form-checkbox">
-                  Many-to-many (junction table)
+                  ${t('adminTables.labelManyToMany')}
                 </label>
-                <span class="form-hint">Marks this as a junction/link table — hides it from add/edit navigation</span>
+                <span class="form-hint">${t('adminTables.hintManyToMany')}</span>
               </div>
             </div>
           </fieldset>
 
           <div class="form-actions">
-            <button type="submit" class="btn btn-primary">${isEdit ? 'Save changes' : 'Create table'}</button>
-            <a href="#/admin/tables" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">${isEdit ? t('form.saveChanges') : t('adminTables.createButton')}</button>
+            <a href="#/admin/tables" class="btn btn-secondary">${t('common.cancel')}</a>
           </div>
         </form>
 
         ${isEdit ? `
         <div id="fk-section" class="admin-fieldset" style="margin-top:1.5rem">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-            <h3 style="font-size:0.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--m-text-muted);margin:0">Foreign Keys</h3>
+            <h3 style="font-size:0.8125rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--m-text-muted);margin:0">${t('adminTables.fkHeading')}</h3>
           </div>
-          <div id="fk-list"><span class="text-muted">Loading…</span></div>
+          <div id="fk-list"><span class="text-muted">${t('common.loading')}</span></div>
           <details style="margin-top:1rem">
-            <summary style="cursor:pointer;font-size:0.875rem;font-weight:500;color:var(--m-accent);padding:0.25rem 0">+ Add Foreign Key</summary>
+            <summary style="cursor:pointer;font-size:0.875rem;font-weight:500;color:var(--m-accent);padding:0.25rem 0">${t('adminTables.fkAddSummary')}</summary>
             <div style="margin-top:0.75rem;padding:0.75rem;background:var(--m-page-bg);border-radius:0.375rem;border:1px solid var(--m-border)">
               <div class="form-row-2">
                 <div class="form-group">
-                  <label class="form-label">Local Field <span class="text-danger">*</span></label>
+                  <label class="form-label">${t('adminTables.fkLocalField')} <span class="text-danger">*</span></label>
                   <input id="fk-local-field" class="form-input" placeholder="e.g. genre_id">
-                  <span class="form-hint">Column name in this table</span>
+                  <span class="form-hint">${t('adminTables.fkHintLocal')}</span>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Foreign Table <span class="text-danger">*</span></label>
-                  <select id="fk-foreign-table" class="form-select"><option value="">— select table —</option></select>
+                  <label class="form-label">${t('adminTables.fkForeignTable')} <span class="text-danger">*</span></label>
+                  <select id="fk-foreign-table" class="form-select"><option value="">${t('adminTables.fkSelectTable')}</option></select>
                 </div>
               </div>
               <div class="form-row-2">
                 <div class="form-group">
-                  <label class="form-label">Value Field <span class="text-danger">*</span></label>
+                  <label class="form-label">${t('adminTables.fkValueField')} <span class="text-danger">*</span></label>
                   <input id="fk-value-field" class="form-input" placeholder="e.g. genre_id">
-                  <span class="form-hint">Column used as the stored value</span>
+                  <span class="form-hint">${t('adminTables.fkHintValue')}</span>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Label Field(s) <span class="text-danger">*</span></label>
+                  <label class="form-label">${t('adminTables.fkLabelField')} <span class="text-danger">*</span></label>
                   <input id="fk-label-field" class="form-input" placeholder="e.g. name or first_name,last_name">
-                  <span class="form-hint">Column(s) shown in dropdown (comma-separated for multi)</span>
+                  <span class="form-hint">${t('adminTables.fkHintLabel')}</span>
                 </div>
               </div>
-              <button id="btn-add-fk" class="btn btn-primary" style="margin-top:0.5rem">Add FK</button>
+              <button id="btn-add-fk" class="btn btn-primary" style="margin-top:0.5rem">${t('adminTables.fkAddButton')}</button>
             </div>
           </details>
         </div>` : ''}
@@ -242,7 +245,7 @@ async function renderForm(root, tableId) {
     }
     tableData = res.data;
     populateForm(root.querySelector('#table-form'), tableData);
-    root.querySelector('#form-title').textContent = `Edit: ${tableData.table_display_name}`;
+    root.querySelector('#form-title').textContent = t('adminTables.editPrefix', { name: tableData.table_display_name });
     await loadFkSection(root, tableId);
   }
 
@@ -293,20 +296,20 @@ async function loadFkSection(root, tableId) {
   const allTablesRes = await api.get('/admin/tables');
   const allTables = allTablesRes.status === 'ok' ? allTablesRes.data : [];
   const fkForeignSel = root.querySelector('#fk-foreign-table');
-  for (const t of allTables) {
+  for (const at of allTables) {
     const opt = document.createElement('option');
-    opt.value = t.table_id;
-    opt.textContent = `${t.table_display_name} (${t.table_real_name})`;
+    opt.value = at.table_id;
+    opt.textContent = `${at.table_display_name} (${at.table_real_name})`;
     fkForeignSel?.appendChild(opt);
   }
 
   const renderFkList = async () => {
     const schemaRes = await api.get(`/schema/${tableId}`);
     const fks = schemaRes.status === 'ok' ? (schemaRes.data.foreignKeys || []) : [];
-    const tableMap = Object.fromEntries(allTables.map(t => [t.table_id, t]));
+    const tableMap = Object.fromEntries(allTables.map(at => [at.table_id, at]));
 
     if (!fks.length) {
-      fkList.innerHTML = '<span class="text-muted" style="font-size:0.875rem">No foreign keys defined for this table.</span>';
+      fkList.innerHTML = `<span class="text-muted" style="font-size:0.875rem">${t('adminTables.fkEmpty')}</span>`;
     } else {
       fkList.innerHTML = '';
       for (const fk of fks) {
@@ -318,8 +321,8 @@ async function loadFkSection(root, tableId) {
           <code style="flex:1">${esc(fk.local_table_field)}</code>
           <span class="text-muted">→</span>
           <code style="flex:2">${foreign ? esc(foreign.table_real_name) : `table #${fk.foreign_table_id}`}.${esc(fk.foreign_table_value_field)}</code>
-          <span class="text-muted" style="flex:2">label: ${esc(fk.foreign_table_label_field)}</span>
-          <button class="btn btn-danger btn-sm" data-fk-id="${fk.fk_id}" style="padding:0.2rem 0.5rem;font-size:0.75rem">Remove</button>
+          <span class="text-muted" style="flex:2">${t('adminTables.fkLabelPrefix')} ${esc(fk.foreign_table_label_field)}</span>
+          <button class="btn btn-danger btn-sm" data-fk-id="${fk.fk_id}" style="padding:0.2rem 0.5rem;font-size:0.75rem">${t('adminTables.fkRemove')}</button>
         `;
         fkList.appendChild(row);
       }
@@ -328,7 +331,7 @@ async function loadFkSection(root, tableId) {
     fkList.addEventListener('click', async e => {
       const btn = e.target.closest('[data-fk-id]');
       if (!btn) return;
-      if (!confirm('Remove this foreign key?')) return;
+      if (!confirm(t('adminTables.fkConfirmRemove'))) return;
       const del = await api.del(`/admin/fk/${btn.dataset.fkId}`);
       if (del.status === 'ok') {
         await renderFkList();
@@ -344,7 +347,7 @@ async function loadFkSection(root, tableId) {
     const valueField = root.querySelector('#fk-value-field').value.trim();
     const labelField = root.querySelector('#fk-label-field').value.trim();
     if (!localField || !foreignTableId || !valueField || !labelField) {
-      alert('All four fields are required.');
+      alert(t('adminTables.fkAlertRequired'));
       return;
     }
     const res = await api.post('/admin/fk', {

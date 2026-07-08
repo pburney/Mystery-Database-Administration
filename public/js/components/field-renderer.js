@@ -1,3 +1,5 @@
+import { t } from '../lib/i18n.js';
+
 export function renderField(field, value = null, { readOnly = false, fkOptions = null } = {}) {
   const wrap = document.createElement('div');
   wrap.className = 'form-group';
@@ -98,7 +100,7 @@ function makeSelect(options, current) {
   sel.className = 'form-select';
   const blank = document.createElement('option');
   blank.value = '';
-  blank.textContent = '— select —';
+  blank.textContent = t('common.select');
   sel.appendChild(blank);
   for (const { value, label } of options) {
     const opt = document.createElement('option');

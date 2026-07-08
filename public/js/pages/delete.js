@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { renderNav, getUser } from '../components/nav.js';
 import { flash } from '../components/flash.js';
 import { fieldLabel } from '../components/field-renderer.js';
+import { t } from '../lib/i18n.js';
 
 export async function render(root, [tableId, pkValue] = []) {
   await getUser();
@@ -11,11 +12,11 @@ export async function render(root, [tableId, pkValue] = []) {
     <div class="page-wrap-xs">
       <div id="flash-area"></div>
       <div class="page-card">
-        <h2 class="page-title text-danger" style="margin-bottom:1rem">Confirm Delete</h2>
+        <h2 class="page-title text-danger" style="margin-bottom:1rem">${t('delete.confirmTitle')}</h2>
         <div id="record-summary" style="margin-bottom:1.5rem; font-size:0.875rem; color:var(--m-text)"></div>
         <div class="btn-group">
-          <button id="btn-confirm" class="btn btn-danger">Yes, delete this record</button>
-          <a href="#/list/${tableId}" class="btn btn-secondary">Cancel</a>
+          <button id="btn-confirm" class="btn btn-danger">${t('delete.confirmButton')}</button>
+          <a href="#/list/${tableId}" class="btn btn-secondary">${t('common.cancel')}</a>
         </div>
       </div>
     </div>
@@ -39,7 +40,7 @@ export async function render(root, [tableId, pkValue] = []) {
   const intro = document.createElement('p');
   intro.className = 'text-muted';
   intro.style.marginBottom = '0.75rem';
-  intro.textContent = `You are about to permanently delete this ${table.table_display_data_word.toLowerCase()}:`;
+  intro.textContent = t('delete.intro', { word: table.table_display_data_word.toLowerCase() });
   summary.appendChild(intro);
 
   for (const field of fields.slice(0, 5)) {
@@ -53,7 +54,7 @@ export async function render(root, [tableId, pkValue] = []) {
     more.className = 'text-muted';
     more.style.fontStyle = 'italic';
     more.style.marginTop = '0.25rem';
-    more.textContent = `…and ${fields.length - 5} more fields`;
+    more.textContent = t('delete.moreFields', { count: fields.length - 5 });
     summary.appendChild(more);
   }
 

@@ -2,6 +2,7 @@ import { api } from '../api.js';
 import { renderNav, getUser } from '../components/nav.js';
 import { flash } from '../components/flash.js';
 import { renderField, collectFormData } from '../components/field-renderer.js';
+import { t } from '../lib/i18n.js';
 
 export async function render(root, [mode, tableId, pkValue] = []) {
   const isEdit = mode === 'edit';
@@ -12,17 +13,17 @@ export async function render(root, [mode, tableId, pkValue] = []) {
     <div class="page-wrap-sm">
       <div id="flash-area"></div>
       <div class="page-header">
-        <h2 id="form-title" class="page-title">${isEdit ? 'Edit' : 'Add'} Record</h2>
-        <a href="#/list/${tableId}" class="back-link">← Back to list</a>
+        <h2 id="form-title" class="page-title">${isEdit ? t('form.editTitle') : t('form.addTitle')}</h2>
+        <a href="#/list/${tableId}" class="back-link">${t('form.backToList')}</a>
       </div>
       <div class="page-card">
         <form id="record-form">
           <div id="fields-area"></div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">
-              ${isEdit ? 'Save changes' : 'Create'}
+              ${isEdit ? t('form.saveChanges') : t('form.create')}
             </button>
-            <a href="#/list/${tableId}" class="btn btn-secondary">Cancel</a>
+            <a href="#/list/${tableId}" class="btn btn-secondary">${t('common.cancel')}</a>
           </div>
         </form>
       </div>
@@ -37,13 +38,15 @@ export async function render(root, [mode, tableId, pkValue] = []) {
 
   const { table, fields, foreignKeys = [], permissions } = schemaRes.data;
   renderNav(root, { title: table.table_display_name, crumbHref: `#/list/${tableId}` });
-  root.querySelector('#form-title').textContent = `${isEdit ? 'Edit' : 'Add'} ${table.table_display_data_word}`;
+  root.querySelector('#form-title').textContent = isEdit
+    ? t('form.editWord', { word: table.table_display_data_word })
+    : t('form.addWord', { word: table.table_display_data_word });
 
   const canSave = isEdit ? permissions?.updateAccess : permissions?.insertAccess;
   const saveBtn = root.querySelector('#record-form .btn-primary');
   if (!canSave) {
     saveBtn.disabled = true;
-    flash(root.querySelector('#flash-area'), "Read-only access — you can view this record but you don't have permission to save changes.", 'info');
+    flash(root.querySelector('#flash-area'), t('form.readOnly'), 'info');
   }
 
   // Build FK field → options map, fetching all in parallel

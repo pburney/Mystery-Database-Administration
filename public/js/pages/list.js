@@ -3,12 +3,13 @@ import { renderNav, getUser } from '../components/nav.js';
 import { flash } from '../components/flash.js';
 import { renderPagination } from '../components/pagination.js';
 import { fieldLabel } from '../components/field-renderer.js';
+import { t } from '../lib/i18n.js';
 
 let _state = {};
 
 export async function render(root, [tableId] = []) {
   await getUser();
-  renderNav(root, { title: 'Loading…' });
+  renderNav(root, { title: t('common.loading') });
 
   root.innerHTML = `
     <div class="page-wrap">
@@ -16,8 +17,8 @@ export async function render(root, [tableId] = []) {
       <div class="page-header">
         <h2 id="table-title" class="page-title"></h2>
         <div class="btn-group">
-          <input id="search" type="search" placeholder="Search…" class="search-input">
-          <a id="btn-add" href="#" class="btn btn-primary" style="display:none">+ Add</a>
+          <input id="search" type="search" placeholder="${t('list.searchPlaceholder')}" class="search-input">
+          <a id="btn-add" href="#" class="btn btn-primary" style="display:none">${t('list.add')}</a>
         </div>
       </div>
       <div class="table-wrap">
@@ -77,7 +78,7 @@ export async function render(root, [tableId] = []) {
   }
   const actionsTh = document.createElement('th');
   actionsTh.className = 'col-actions';
-  actionsTh.textContent = 'Actions';
+  actionsTh.textContent = t('common.actions');
   theadRow.appendChild(actionsTh);
 
   root.querySelector('#search').addEventListener('input', e => {
@@ -108,7 +109,7 @@ export async function render(root, [tableId] = []) {
       const td = document.createElement('td');
       td.colSpan = displayFields.length + 1;
       td.className = 'table-empty';
-      td.textContent = 'No records found.';
+      td.textContent = t('list.empty');
       tr.appendChild(td);
       tbody.appendChild(tr);
       return;
@@ -126,9 +127,9 @@ export async function render(root, [tableId] = []) {
       const actionsTd = document.createElement('td');
       actionsTd.className = 'col-actions';
       actionsTd.innerHTML = `
-        <a href="#/view/${tableId}/${pkVal}" class="action-view">View</a>
-        <a href="#/edit/${tableId}/${pkVal}" class="action-edit">Edit</a>
-        <a href="#/delete/${tableId}/${pkVal}" class="action-delete">Delete</a>
+        <a href="#/view/${tableId}/${pkVal}" class="action-view">${t('common.view')}</a>
+        <a href="#/edit/${tableId}/${pkVal}" class="action-edit">${t('common.edit')}</a>
+        <a href="#/delete/${tableId}/${pkVal}" class="action-delete">${t('common.delete')}</a>
       `;
       tr.appendChild(actionsTd);
       tbody.appendChild(tr);

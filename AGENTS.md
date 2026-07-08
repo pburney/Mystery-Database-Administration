@@ -176,7 +176,7 @@ INSERT INTO mystery_settings (setting_key, setting_value) VALUES ('logo_url', 'h
 
 Defaults: `app_name` = "Mystery", `subtitle` = "Database Admin Interface", `logo_url` = bundled dolphin logo at `/images/mystery-logo.png`.
 
-The `/api/auth/branding` endpoint returns these values without requiring authentication — it is fetched by the login page before rendering.
+The `/api/auth/branding` endpoint returns these values without requiring authentication. It's fetched once at boot and cached (`public/js/lib/branding.js`), and drives three things: the login page, the nav bar brand (text + optional logo), and the browser tab title — so an app embedding Mystery only needs to seed these three settings to fully rebrand it.
 
 ### Multiple Database Connections
 Mystery can manage tables from different databases in one instance.
