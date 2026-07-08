@@ -19,6 +19,7 @@ const routes = {
   'add':    () => import('./pages/form.js'),
   'edit':   () => import('./pages/form.js'),
   'delete': () => import('./pages/delete.js'),
+  'plugin': () => import('./pages/plugin.js'),
 };
 
 async function navigate() {
