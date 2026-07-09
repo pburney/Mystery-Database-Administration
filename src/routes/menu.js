@@ -29,10 +29,10 @@ router.get('/', requireLogin, (req, res) => {
   const plugins = req.user.isAdmin
     ? db.prepare(`SELECT * FROM plugins WHERE is_active = 1`).all()
     : db.prepare(
-        `SELECT p.* FROM plugins p
-         JOIN users_groups ug ON ug.group_id = p.group_restriction
-         WHERE p.is_active = 1 AND (p.group_restriction = 0 OR ug.user_id = ?)
-         GROUP BY p.plugin_id`
+        `SELECT * FROM plugins
+         WHERE is_active = 1
+           AND (group_restriction = 0
+                OR group_restriction IN (SELECT group_id FROM users_groups WHERE user_id = ?))`
       ).all(req.user.userId);
 
   res.json({ status: 'ok', message: 'ok', data: { tables, plugins } });
