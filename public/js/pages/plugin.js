@@ -17,7 +17,13 @@ export async function render(root, [pluginKey, ...params] = []) {
   }
 
   try {
-    const mod = await import(`/plugins/${pluginKey}/${pluginKey}.js`);
+    // Absolute path specifiers always resolve from the origin root,
+    // ignoring any <base href> — same reason api.js reads <base> manually
+    // rather than hardcoding "/api". Without this, plugins 404 under a
+    // subpath deployment (BASE_PATH set) even though the rest of the shell
+    // loaded fine via relative script/link tags in index.html.
+    const basePath = document.querySelector('base')?.getAttribute('href')?.replace(/\/$/, '') ?? '';
+    const mod = await import(`${basePath}/plugins/${pluginKey}/${pluginKey}.js`);
     if (typeof mod.render !== 'function') {
       throw new Error(`Plugin "${pluginKey}" has no render() export`);
     }
