@@ -124,6 +124,15 @@ for (const [local, localField, foreign, valueField, labelField] of fkDefs) {
 }
 console.log(`  Wired ${fkDefs.length} foreign key relationships`);
 
+// Example plugin — build mixtapes out of the Chinook track library.
+// See src/plugins/mixtape/. (For an existing install that skips this script,
+// run the same INSERT by hand against mystery-chinook.db.)
+db.prepare(
+  `INSERT INTO plugins (plugin_key, plugin_label, plugin_route, is_active)
+   VALUES ('mixtape', 'Mixtape', '/api/plugins/mixtape', 1)`
+).run();
+console.log('  Registered plugin: mixtape');
+
 db.close();
 
 // Write .env.demo
