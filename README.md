@@ -155,7 +155,7 @@ router.get('/status', requireLogin, (req, res) => {
 export default router;
 ```
 
-Register in the `plugins` table. Plugin mounts at `/api/plugins/my-tool`. See [src/plugins/README.md](src/plugins/README.md) for the full guide.
+Register in the `plugins` table. Plugin mounts at `/api/plugins/my-tool`. See [src/plugins/README.md](src/plugins/README.md) for the full guide, and [src/plugins/mixtape/](src/plugins/mixtape/) for a complete worked example (enabled by `npm run demo`).
 
 ---
 

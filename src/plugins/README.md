@@ -68,3 +68,9 @@ VALUES (1, 'after', 'insert', './src/plugins/my-plugin/hooks/after-insert.js', 1
 Plugins can serve frontend JS from `src/plugins/<key>/public/<key>.js`.
 The file will be accessible at `/plugins/<key>/<key>.js` and loaded when the user
 navigates to `#/plugin/<key>`.
+
+## Working example
+
+See [`mixtape/`](mixtape/) for a complete, runnable plugin — a backend Router,
+self-provisioned tables, a `render()` frontend, and a unit test. It's enabled by
+the Chinook demo (`npm run demo`).
